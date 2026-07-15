@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026 FIFA World Cup — LLM Prediction Study</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--font-sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+h2.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+*{box-sizing:border-box}
+:root{
+  --wc-navy:#0D1B3E;--wc-navy-mid:#1A2F5E;--wc-navy-light:#243770;
+  --wc-gold:#C9A84C;--wc-gold-light:#E8C96A;--wc-gold-pale:#F5EDD6;
+  --wc-white:#FFFFFF;--wc-offwhite:#F7F8FA;--wc-muted:#6B7A99;
+  --wc-border:#D4D9E8;--wc-success:#1A7A3C;--wc-danger:#B91C1C;
+}
+body{margin:0;padding:12px;background:var(--wc-white);font-family:var(--font-sans)}
+.dash{max-width:900px;margin:0 auto}
+.dash-header{background:var(--wc-navy);padding:1.25rem 1.5rem 1rem;border-radius:12px;margin-bottom:1.25rem}
+.dash-title{font-size:17px;font-weight:500;color:var(--wc-white);margin:0 0 2px}
+.dash-sub{font-size:12px;color:#9BAAC7;margin:0}
+.dash-title span{color:var(--wc-gold)}
+.metric-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:1.25rem}
+.metric{background:var(--wc-navy);border-radius:10px;padding:.8rem 1rem;border:.5px solid var(--wc-navy-light)}
+.metric-label{font-size:11px;color:#9BAAC7;margin:0 0 4px}
+.metric-val{font-size:19px;font-weight:500;color:var(--wc-white);margin:0}
+.metric-val.gold{color:var(--wc-gold)}
+.metric-sub{font-size:11px;color:#9BAAC7;margin:3px 0 0}
+.tab-row{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:1.25rem}
+.tab{font-size:12px;font-weight:500;color:var(--wc-muted);padding:7px 6px;cursor:pointer;background:var(--wc-offwhite);border:.5px solid var(--wc-border);border-radius:8px;text-align:center}
+.tab.active{background:var(--wc-navy);color:var(--wc-gold);border-color:var(--wc-navy)}
+.lb-head{display:grid;grid-template-columns:28px 1fr 110px 90px 110px;gap:8px;padding:0 4px 8px;border-bottom:1px solid var(--wc-border);margin-bottom:2px}
+.lb-head span{font-size:10px;font-weight:500;color:var(--wc-muted);text-transform:uppercase;letter-spacing:.04em}
+.lb-row{display:grid;grid-template-columns:28px 1fr 110px 90px 110px;align-items:center;gap:8px;padding:10px 4px;border-bottom:.5px solid var(--wc-border)}
+.lb-row:last-child{border-bottom:none}
+.rank-badge{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;font-size:11px;font-weight:500;background:var(--wc-offwhite);color:var(--wc-muted);border:.5px solid var(--wc-border)}
+.rank-badge.gold{background:var(--wc-gold);color:var(--wc-navy);border-color:var(--wc-gold)}
+.model-pill{display:flex;align-items:center;gap:7px}
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block;flex-shrink:0}
+.dot-lg{width:11px;height:11px;border-radius:50%;display:inline-block;flex-shrink:0}
+.model-name{font-size:13px;font-weight:500;color:#1a1a2e}
+.model-sub{font-size:11px;color:var(--wc-muted);margin-top:1px}
+.bar-group{display:flex;flex-direction:column;gap:4px}
+.bar-pct{font-size:13px;font-weight:500;color:#1a1a2e}
+.bar-pct.lead{color:var(--wc-navy)}
+.bar-wrap{height:5px;background:var(--wc-border);border-radius:3px;width:100%;position:relative}
+.bar-fill{height:5px;border-radius:3px;position:absolute;left:0;top:0}
+.conf-val{font-size:13px;font-weight:500;text-align:right;color:#1a1a2e}
+.conf-val.lead{color:var(--wc-navy)}
+.note{font-size:11px;color:var(--wc-muted);margin-top:.75rem;line-height:1.6;padding-top:.75rem;border-top:.5px solid var(--wc-border)}
+.filter-row{display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap}
+.filter-btn{font-size:12px;padding:4px 10px;border-radius:6px;border:.5px solid var(--wc-border);background:none;color:var(--wc-muted);cursor:pointer}
+.filter-btn.active{background:var(--wc-navy);color:var(--wc-gold);border-color:var(--wc-navy)}
+.game-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(195px,1fr));gap:10px}
+.game-card{background:var(--wc-offwhite);border-radius:10px;padding:.9rem;border:.5px solid var(--wc-border)}
+.game-matchup{font-size:13px;font-weight:500;color:#1a1a2e;margin:0 0 2px;display:flex;align-items:center;flex-wrap:wrap;gap:5px}
+.game-meta{font-size:11px;color:var(--wc-muted);margin:0 0 8px}
+.game-score{font-size:13px;color:#1a1a2e;margin:0 0 8px;padding-bottom:8px;border-bottom:.5px solid var(--wc-border)}
+.pred-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.pred-row:last-child{margin-bottom:0}
+.pred-left{font-size:11px;color:var(--wc-muted);display:flex;align-items:center;gap:5px}
+.pred-right{display:flex;align-items:center;gap:5px;font-size:11px}
+.pred-winner{color:#4a5568}
+.pred-check{font-size:12px;font-weight:500}
+.upset-badge{font-size:10px;font-weight:500;background:#FEE2E2;color:#991B1B;border-radius:3px;padding:2px 5px}
+.split-badge{font-size:10px;font-weight:500;background:var(--wc-gold-pale);color:#92400E;border-radius:3px;padding:2px 5px}
+.about-section{margin-bottom:1.5rem}
+.about-section h3{font-size:14px;font-weight:500;color:#1a1a2e;margin:0 0 8px}
+.about-section p{font-size:13px;color:#4a5568;line-height:1.7;margin:0 0 8px}
+.about-section p:last-child{margin-bottom:0}
+.about-section p strong{color:#1a1a2e;font-weight:500}
+.tracked-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-top:8px}
+.tracked-item{background:var(--wc-offwhite);border-radius:8px;border:.5px solid var(--wc-border);padding:10px 12px}
+.tracked-item-label{font-size:12px;font-weight:500;color:#1a1a2e;margin:0 0 3px}
+.tracked-item-desc{font-size:11px;color:var(--wc-muted);margin:0;line-height:1.5}
+.model-list{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.model-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:var(--wc-offwhite);border-radius:8px;border:.5px solid var(--wc-border)}
+.model-item-name{font-size:13px;font-weight:500;color:#1a1a2e;margin:0 0 2px}
+.model-item-desc{font-size:12px;color:var(--wc-muted);margin:0;line-height:1.5}
+.divider{border:none;border-top:.5px solid var(--wc-border);margin:1.25rem 0}
+.finding{background:var(--wc-offwhite);border-radius:10px;border:.5px solid var(--wc-border);padding:1rem 1.1rem;margin-bottom:10px;border-left:3px solid var(--wc-navy)}
+.finding:last-child{margin-bottom:0}
+.finding-num{font-size:10px;font-weight:500;color:var(--wc-muted);margin:0 0 4px;text-transform:uppercase;letter-spacing:.06em}
+.finding-title{font-size:14px;font-weight:500;color:#1a1a2e;margin:0 0 6px}
+.finding-body{font-size:13px;color:#4a5568;line-height:1.7;margin:0}
+.finding-body strong{font-weight:500;color:#1a1a2e}
+.quote-block{background:var(--wc-white);border-left:2px solid var(--wc-gold);padding:8px 12px;margin:8px 0 0;font-size:12px;color:#4a5568;line-height:1.6;font-style:italic;border-radius:0 4px 4px 0}
+.slabel{font-size:10px;font-weight:500;letter-spacing:.07em;text-transform:uppercase;color:var(--wc-muted);margin:0 0 10px}
+@media(max-width:480px){
+  body{padding:8px}
+  .metric-row{grid-template-columns:repeat(2,1fr)}
+  .lb-head{grid-template-columns:24px 1fr 70px 60px;gap:4px}
+  .lb-head span:last-child{display:none}
+  .lb-row{grid-template-columns:24px 1fr 70px 60px;gap:4px}
+  .lb-row .conf-val{display:none}
+  .game-grid{grid-template-columns:1fr}
+  .tab-row{grid-template-columns:repeat(2,1fr);gap:5px}
+  .dash-header{border-radius:8px;padding:1rem}
+  .dash-title{font-size:15px}
+  .metric-val{font-size:17px}
+  .filter-btn{font-size:11px;padding:4px 8px}
+}
+</style>
+</head>
+<body>
+<div class="dash">
+
+<h2 class="sr-only">2026 FIFA World Cup LLM prediction study — findings and methodology</h2>
+
+<div class="dash-header">
+  <p class="dash-title">2026 FIFA World Cup &mdash; <span>LLM Prediction Study</span></p>
+  <p class="dash-sub">5 AI models &middot; 14 knockout games &middot; No search</p>
+</div>
+
+<div class="metric-row">
+  <div class="metric"><p class="metric-label">Games scored</p><p class="metric-val">14</p><p class="metric-sub">Round of 16 &middot; Quarterfinals &middot; Semifinals</p></div>
+  <div class="metric"><p class="metric-label">Total predictions</p><p class="metric-val">70</p><p class="metric-sub">5 models &times; 14 games</p></div>
+  <div class="metric"><p class="metric-label">Top model</p><p class="metric-val gold">Gemini</p><p class="metric-sub">92.9% correct &middot; 5/14 scorelines right</p></div>
+  <div class="metric"><p class="metric-label">When all 5 agreed</p><p class="metric-val">9/10</p><p class="metric-sub">Picked the correct winner</p></div>
+  <div class="metric"><p class="metric-label">All models missed</p><p class="metric-val">1 game</p><p class="metric-sub">Brazil vs Norway</p></div>
+</div>
+
+<div class="tab-row">
+  <button class="tab active" id="tab-about">About</button>
+  <button class="tab" id="tab-lb">Leaderboard</button>
+  <button class="tab" id="tab-games">Per-game</button>
+  <button class="tab" id="tab-findings">Findings</button>
+</div>
+
+<div id="pane-about">
+  <div class="about-section">
+    <h3>What this is</h3>
+    <p>I prompted 5 AI models on every 2026 FIFA World Cup knockout stage match &mdash; asking each to predict the winner, scoreline, confidence level, and reasoning before the game was played. No search, no live data. Just what the models know.</p>
+    <p>The goal was to see how well LLMs actually reason under uncertainty &mdash; and whether their confidence scores mean anything.</p>
+  </div>
+  <hr class="divider">
+  <div class="about-section">
+    <h3>What I collected per prediction</h3>
+    <div class="tracked-grid">
+      <div class="tracked-item"><p class="tracked-item-label">Predicted score</p><p class="tracked-item-desc">Exact scoreline, including extra time or penalties if the model predicted them</p></div>
+      <div class="tracked-item"><p class="tracked-item-label">Predicted winner</p><p class="tracked-item-desc">Which team the model picked to advance</p></div>
+      <div class="tracked-item"><p class="tracked-item-label">Confidence (1&ndash;10)</p><p class="tracked-item-desc">Self-reported &mdash; 1 = pure guess, 10 = very confident</p></div>
+      <div class="tracked-item"><p class="tracked-item-label">Reasoning</p><p class="tracked-item-desc">One sentence from the model explaining its pick</p></div>
+    </div>
+  </div>
+  <hr class="divider">
+  <div class="about-section">
+    <h3>Methodology</h3>
+    <p><strong>No search:</strong> every model was run without web search or live data. Not all models support search, so turning it off kept things fair.</p>
+    <p><strong>Fresh context every time:</strong> each prediction was made in a brand new conversation &mdash; new chat, new account, no history carried over. This keeps every run fully independent with no cross-contamination between predictions.</p>
+    <p><strong>Timing:</strong> prompts were run after the matchup was confirmed (following the previous round) but before the game kicked off. No hindsight, no live data.</p>
+    <p><strong>One prompt per game for the leaderboard:</strong> each model was prompted once per game for the leaderboard. That&rsquo;s what the leaderboard and per-game tabs are based on.</p>
+    <p><strong>Consistency study:</strong> the semifinals and Final were each run 5 times per model in separate fresh conversations, using the identical prompt. The goal was to see whether models give stable answers or flip &mdash; and whether their confidence tracks with it. That data is a separate reliability layer on top of the prediction study.</p>
+    <p><strong>Scoring:</strong> correct winner (yes/no) and exact score (yes/no), checked against the actual result after each game.</p>
+  </div>
+  <hr class="divider">
+  <div class="about-section">
+    <h3>Models tested</h3>
+    <div class="model-list" id="model-list"></div>
+  </div>
+</div>
+
+<div id="pane-lb" style="display:none">
+  <div class="lb-head">
+    <span></span><span>Model</span><span>Correct winner</span><span style="text-align:right">Exact score</span><span style="text-align:right">Confidence when correct</span>
+  </div>
+  <div id="leaderboard"></div>
+</div>
+
+<div id="pane-games" style="display:none">
+  <div class="filter-row" id="filters"></div>
+  <div class="game-grid" id="games"></div>
+</div>
+
+<div id="pane-findings" style="display:none">
+  <div id="findings"></div>
+</div>
+
+</div>
+
+<script>
+const MC={
+  'Gemini 3.5 Flash':'#2a78d6',
+  'Perplexity':      '#1baf7a',
+  'Claude Sonnet 5': '#C9A84C',
+  'ChatGPT (GPT-5.5)':'#6B4FBB',
+  'Grok 4':          '#C0392B'
+};
+const SH={'Gemini 3.5 Flash':'Gemini','Perplexity':'Perplexity','Claude Sonnet 5':'Claude','ChatGPT (GPT-5.5)':'ChatGPT','Grok 4':'Grok'};
+
+const models=[
+  {name:'Gemini 3.5 Flash', correct:13,total:14,exactScore:5,confWhenCorrect:6.75,desc:'Led on every metric \u2014 most correct winners, most exact scores, highest confidence when right. The gap between Gemini and everyone else was consistent throughout.'},
+  {name:'ChatGPT (GPT-5.5)',correct:11,total:14,exactScore:3,confWhenCorrect:4.0, desc:'Tied for second on correct winners. Confidence scores were middling but consistent \u2014 no obvious pattern of over- or under-confidence.'},
+  {name:'Claude Sonnet 5',  correct:11,total:14,exactScore:3,confWhenCorrect:4.2, desc:'Tied for second, but almost every prediction came with a disclaimer about how speculative it was. The hedging didn\'t actually hurt the results \u2014 just made it sound less sure than it was.'},
+  {name:'Perplexity',       correct:11,total:14,exactScore:3,confWhenCorrect:4.2, desc:'Tied for second. The most notable thing: confidence scores barely moved regardless of whether it was right or wrong \u2014 no real signal there.'},
+  {name:'Grok 4',           correct:10,total:14,exactScore:2,confWhenCorrect:5.17,desc:'The only model to miss both semifinals, which pushed it to last. Ironically had the highest confidence when correct of the mid-tier models.'},
+];
+
+const gameData=[
+  {id:'Final',match:'Spain vs Argentina',        stage:'Final',       score:null,   winner:null,        upset:false,preds:[{m:'ChatGPT (GPT-5.5)',pick:'Spain',ok:null},{m:'Gemini 3.5 Flash',pick:'Spain',ok:null},{m:'Claude Sonnet 5',pick:'Argentina',ok:null},{m:'Grok 4',pick:'Spain',ok:null},{m:'Perplexity',pick:'Spain',ok:null}]},
+  {id:'3rd',  match:'England vs France',         stage:'Third Place', score:null,   winner:null,        upset:false,preds:[{m:'ChatGPT (GPT-5.5)',pick:'England',ok:null},{m:'Gemini 3.5 Flash',pick:'France',ok:null},{m:'Claude Sonnet 5',pick:'England',ok:null},{m:'Grok 4',pick:'England',ok:null},{m:'Perplexity',pick:'France',ok:null}]},
+  {id:'SF2',  match:'England vs Argentina',      stage:'Semifinal',   score:'1\u20132',winner:'Argentina',upset:false,preds:[{m:'ChatGPT (GPT-5.5)',pick:'Argentina',ok:true},{m:'Gemini 3.5 Flash',pick:'Argentina',ok:true},{m:'Claude Sonnet 5',pick:'Argentina',ok:true},{m:'Grok 4',pick:'England',ok:false},{m:'Perplexity',pick:'Argentina',ok:true}]},
+  {id:'SF1',  match:'France vs Spain',           stage:'Semifinal',   score:'0\u20132',winner:'Spain',   upset:false,preds:[{m:'ChatGPT (GPT-5.5)',pick:'Spain',ok:true},{m:'Gemini 3.5 Flash',pick:'Spain',ok:true},{m:'Claude Sonnet 5',pick:'France',ok:false},{m:'Grok 4',pick:'France',ok:false},{m:'Perplexity',pick:'France',ok:false}]},
+  {id:'QF4',  match:'Argentina vs Switzerland',  stage:'Quarterfinal',score:'3\u20131',winner:'Argentina',upset:false,preds:[{m:'ChatGPT (GPT-5.5)',pick:'Argentina',ok:true},{m:'Gemini 3.5 Flash',pick:'Argentina',ok:true},{m:'Claude Sonnet 5',pick:'Argentina',ok:true},{m:'Grok 4',pick:'Argentina',ok:true},{m:'Perplexity',pick:'Argentina',ok:true}]},
+  {id:'QF3',  match:'Norway vs England',         stage:'Quarterfinal',score:'1\u20132',winner:'England', upset:false,preds:[{m:'ChatGPT (GPT-5.5)',pick:'England',ok:true},{m:'Gemini 3.5 Flash',pick:'England',ok:true},{m:'Claude Sonnet 5',pick:'England',ok:true},{m:'Grok 4',pick:'England',ok:true},{m:'Perplexity',pick:'England',ok:true}]},
+  {id:'QF2',  match:'Spain vs Belgium',          stage:'Quarterfinal',score:'2\u20131',winner:'Spain',   upset:false,preds:[{m:'ChatGPT (GPT-5.5)',pick:'Spain',ok:true},{m:'Gemini 3.5 Flash',pick:'Spain',ok:true},{m:'Claude Sonnet 5',pick:'Spain',ok:true},{m:'Grok 4',pick:'Spain',ok:true},{m:'Perplexity',pick:'Spain',ok:true}]},
+  {id:'QF1',  match:'France vs Morocco',         stage:'Quarterfinal',score:'2\u20130',winner:'France',  upset:false,preds:[{m:'ChatGPT (GPT-5.5)',pick:'France',ok:true},{m:'Gemini 3.5 Flash',pick:'France',ok:true},{m:'Claude Sonnet 5',pick:'France',ok:true},{m:'Grok 4',pick:'France',ok:true},{m:'Perplexity',pick:'France',ok:true}]},
+  {id:'R16-8',match:'Switzerland vs Colombia',   stage:'Round of 16', score:'0\u20130 (PKs)',winner:'Switzerland',upset:false,preds:[{m:'ChatGPT (GPT-5.5)',pick:'Switzerland',ok:true},{m:'Gemini 3.5 Flash',pick:'Switzerland',ok:true},{m:'Claude Sonnet 5',pick:'Colombia',ok:false},{m:'Grok 4',pick:'Colombia',ok:false},{m:'Perplexity',pick:'Switzerland',ok:true}]},
+  {id:'R16-7',match:'Argentina vs Egypt',        stage:'Round of 16', score:'3\u20132',winner:'Argentina',upset:false,preds:[{m:'ChatGPT (GPT-5.5)',pick:'Argentina',ok:true},{m:'Gemini 3.5 Flash',pick:'Argentina',ok:true},{m:'Claude Sonnet 5',pick:'Argentina',ok:true},{m:'Grok 4',pick:'Argentina',ok:true},{m:'Perplexity',pick:'Argentina',ok:true}]},
+  {id:'R16-6',match:'USA vs Belgium',            stage:'Round of 16', score:'1\u20134',winner:'Belgium',  upset:false,preds:[{m:'ChatGPT (GPT-5.5)',pick:'USA',ok:false},{m:'Gemini 3.5 Flash',pick:'Belgium',ok:true},{m:'Claude Sonnet 5',pick:'Belgium',ok:true},{m:'Grok 4',pick:'Belgium',ok:true},{m:'Perplexity',pick:'USA',ok:false}]},
+  {id:'R16-5',match:'Portugal vs Spain',         stage:'Round of 16', score:'0\u20131',winner:'Spain',   upset:false,preds:[{m:'ChatGPT (GPT-5.5)',pick:'Portugal',ok:false},{m:'Gemini 3.5 Flash',pick:'Spain',ok:true},{m:'Claude Sonnet 5',pick:'Spain',ok:true},{m:'Grok 4',pick:'Spain',ok:true},{m:'Perplexity',pick:'Spain',ok:true}]},
+  {id:'R16-4',match:'Mexico vs England',         stage:'Round of 16', score:'2\u20133',winner:'England', upset:false,preds:[{m:'ChatGPT (GPT-5.5)',pick:'England',ok:true},{m:'Gemini 3.5 Flash',pick:'England',ok:true},{m:'Claude Sonnet 5',pick:'England',ok:true},{m:'Grok 4',pick:'England',ok:true},{m:'Perplexity',pick:'England',ok:true}]},
+  {id:'R16-3',match:'Brazil vs Norway',          stage:'Round of 16', score:'1\u20132',winner:'Norway',  upset:true, preds:[{m:'ChatGPT (GPT-5.5)',pick:'Brazil',ok:false},{m:'Gemini 3.5 Flash',pick:'Brazil',ok:false},{m:'Claude Sonnet 5',pick:'Brazil',ok:false},{m:'Grok 4',pick:'Brazil',ok:false},{m:'Perplexity',pick:'Brazil',ok:false}]},
+  {id:'R16-2',match:'Paraguay vs France',        stage:'Round of 16', score:'0\u20131',winner:'France',  upset:false,preds:[{m:'ChatGPT (GPT-5.5)',pick:'France',ok:true},{m:'Gemini 3.5 Flash',pick:'France',ok:true},{m:'Claude Sonnet 5',pick:'France',ok:true},{m:'Grok 4',pick:'France',ok:true},{m:'Perplexity',pick:'France',ok:true}]},
+  {id:'R16-1',match:'Canada vs Morocco',         stage:'Round of 16', score:'0\u20133',winner:'Morocco', upset:false,preds:[{m:'ChatGPT (GPT-5.5)',pick:'Morocco',ok:true},{m:'Gemini 3.5 Flash',pick:'Morocco',ok:true},{m:'Claude Sonnet 5',pick:'Morocco',ok:true},{m:'Grok 4',pick:'Morocco',ok:true},{m:'Perplexity',pick:'Morocco',ok:true}]},
+];
+
+const findingsData=[
+  {n:'01',title:'Gemini leads \u2014 and it\'s not close',body:'<strong>13 of 14 winners correct (92.9%)</strong>. Most exact scores. Highest confidence when right. Every other model topped out at 78.6%.',quote:null},
+  {n:'02',title:'The one game everyone got wrong',body:'Brazil vs Norway. Every model picked Brazil. Norway won 2\u20131. They all defaulted to reputation over current form.',quote:null},
+  {n:'03',title:'When all 5 agree, trust it \u2014 mostly',body:'When all 5 picked the same winner, they were right <strong>9 out of 10 times</strong>. The one miss was also the tournament\'s biggest upset.',quote:null},
+  {n:'04',title:'The semifinals separated the pack',body:'Through the quarters, four models were within one game of each other. The semis broke it open \u2014 Grok missed both, dropping to last. The semifinals did more to separate the leaderboard than the previous eight games combined.',quote:null},
+  {n:'05',title:'Scorelines: one moment of precision, a lot of caution',body:'Almost every prediction was a 1-goal game. Nobody called a blowout \u2014 but <strong>Belgium won 4\u20131, Morocco 3\u20130, Argentina 3\u20131</strong>. The one exception: three models nailed the exact 1\u20132 scoreline in the Argentina vs England semifinal.',quote:null},
+  {n:'06',title:'Confidence only meant something for Gemini',body:'Most models scored themselves the same whether they were right or wrong. Gemini\'s confidence was noticeably higher on correct picks \u2014 the only model where the number actually meant something.',quote:null},
+  {n:'07',title:'Claude hedged everything \u2014 and still tied for second',body:'"Pure speculation." "This is hypothetical." Every prediction came with a disclaimer. Didn\'t matter \u2014 it tied for second anyway.',quote:'"Pure speculation, as this hypothetical fixture hasn\'t been played and depends on squads, form, and draw outcomes I can\'t know in advance." \u2014 Claude Sonnet 5'},
+  {n:'08',title:'Five models, almost identical reasoning',body:'Different architectures, different training \u2014 same vocabulary. "Superior squad depth." "Tournament pedigree." "Tight knockout match." Every model, every game.',quote:'"Argentina\'s world-class attacking quality and recent World Cup pedigree should edge out Switzerland\'s disciplined but less creative side in a tight knockout match." \u2014 Grok 4\n"Argentina\'s superior squad depth and quality should overcome Egypt\'s disciplined defense in a knockout setting." \u2014 Claude Sonnet 5\n"Argentina\'s superior squad depth, tournament experience and midfield control should narrowly edge out a highly competitive Norway squad." \u2014 Gemini 3.5 Flash'},
+];
+
+function renderAbout(){
+  document.getElementById('model-list').innerHTML=models.map(function(m){
+    return '<div class="model-item"><span class="dot-lg" style="background:'+MC[m.name]+';margin-top:3px"></span><div><p class="model-item-name">'+m.name+'</p><p class="model-item-desc">'+m.desc+'</p></div></div>';
+  }).join('');
+}
+
+function renderLeaderboard(){
+  var maxConf=Math.max.apply(null,models.map(function(m){return m.confWhenCorrect;}));
+  var html=models.map(function(m,i){
+    var isTop=i===0;
+    var pct=Math.round(m.correct/m.total*100);
+    var isTopConf=m.confWhenCorrect===maxConf;
+    return '<div class="lb-row">'+
+      '<div><span class="rank-badge '+(isTop?'gold':'')+'>'+(i+1)+'</span></div>'+
+      '<div class="model-pill"><span class="dot" style="background:'+MC[m.name]+'"></span>'+
+      '<div><div class="model-name">'+SH[m.name]+'</div><div class="model-sub">'+m.correct+'/'+m.total+' correct</div></div></div>'+
+      '<div class="bar-group"><span class="bar-pct '+(isTop?'lead':'')+'">'+pct+'%</span>'+
+      '<div class="bar-wrap"><div class="bar-fill" style="width:'+pct+'%;background:'+(isTop?'#0D1B3E':'#D4D9E8')+'"></div></div></div>'+
+      '<div style="text-align:right;font-size:13px;font-weight:500;color:#1a1a2e">'+m.exactScore+'<span style="color:var(--wc-muted);font-weight:400">/'+m.total+'</span></div>'+
+      '<div class="conf-val '+(isTopConf?'lead':'')+'">'+m.confWhenCorrect.toFixed(1)+'<span style="color:var(--wc-muted);font-weight:400">/10</span></div>'+
+    '</div>';
+  }).join('');
+  html+='<p class="note">Correct winner = did the model pick the team that actually won. Exact score = did the predicted scoreline match the actual result exactly. Confidence when correct = average self-reported confidence (1\u201310) on picks the model got right. The Final and Third Place match are pending.</p>';
+  document.getElementById('leaderboard').innerHTML=html;
+}
+
+var activeStage='All';
+
+function renderFilters(){
+  var stages=['All','Final','Third Place','Semifinal','Quarterfinal','Round of 16'];
+  document.getElementById('filters').innerHTML=stages.map(function(s){
+    return '<button class="filter-btn'+(s===activeStage?' active':'')+'" data-stage="'+s+'">'+s+'</button>';
+  }).join('');
+}
+
+function renderGames(){
+  var filtered=activeStage==='All'?gameData:gameData.filter(function(g){return g.stage===activeStage;});
+  document.getElementById('games').innerHTML=filtered.map(function(g){
+    var scored=g.score!==null;
+    var n=scored?g.preds.filter(function(p){return p.ok;}).length:0;
+    var split=scored&&n>0&&n<5;
+    var html='<div class="game-card">';
+    html+='<p class="game-matchup">'+g.match+(g.upset?' <span class="upset-badge">upset</span>':'')+(split?' <span class="split-badge">'+n+'/5</span>':'')+'</p>';
+    html+='<p class="game-meta">'+g.stage+'</p>';
+    html+=scored?'<p class="game-score">Result: <strong>'+g.score+' '+g.winner+'</strong></p>':'<p class="game-score" style="color:var(--wc-muted)">Result pending</p>';
+    html+=g.preds.map(function(p){
+      return '<div class="pred-row"><span class="pred-left"><span class="dot" style="background:'+MC[p.m]+'"></span>'+SH[p.m]+'</span>'+
+        '<span class="pred-right"><span class="pred-winner">'+p.pick+'</span>'+(scored?'<span class="pred-check" style="color:'+(p.ok?'var(--wc-success)':'var(--wc-danger)')+'\">'+(p.ok?'\u2713':'\u2717')+'</span>':'')+'</span></div>';
+    }).join('');
+    html+='</div>';
+    return html;
+  }).join('');
+}
+
+function renderFindings(){
+  document.getElementById('findings').innerHTML=findingsData.map(function(f){
+    return '<div class="finding"><p class="finding-num">Finding '+f.n+'</p><p class="finding-title">'+f.title+'</p><p class="finding-body">'+f.body+'</p>'+(f.quote?'<div class="quote-block">'+f.quote.replace(/\n/g,'<br><br>')+'</div>':'')+'</div>';
+  }).join('');
+}
+
+function showTab(tab){
+  ['about','lb','games','findings'].forEach(function(t){
+    document.getElementById('pane-'+t).style.display=t===tab?'block':'none';
+    document.getElementById('tab-'+t).classList.toggle('active',t===tab);
+  });
+}
+
+// Tab clicks
+document.getElementById('tab-about').addEventListener('click',function(){showTab('about');});
+document.getElementById('tab-lb').addEventListener('click',function(){showTab('lb');});
+document.getElementById('tab-games').addEventListener('click',function(){showTab('games');});
+document.getElementById('tab-findings').addEventListener('click',function(){showTab('findings');});
+
+// Filter clicks via delegation
+document.getElementById('filters').addEventListener('click',function(e){
+  var btn=e.target.closest('.filter-btn');
+  if(!btn)return;
+  activeStage=btn.getAttribute('data-stage');
+  document.querySelectorAll('.filter-btn').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  renderGames();
+});
+
+renderAbout();
+renderLeaderboard();
+renderFilters();
+renderGames();
+renderFindings();
+</script>
+</body>
+</html>
