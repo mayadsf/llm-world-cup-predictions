@@ -263,9 +263,9 @@ function renderLeaderboard(){
         '<div class="lb-cell-conf conf-val '+(isTopConf?'lead':'')+'">'+m.confWhenCorrect.toFixed(1)+'</div>'+
       '</div>'+
       '<div class="lb-row-stats">'+
-        '<span><span class="lb-stat-label">Correct</span>'+pct+'%</span>'+
-        '<span><span class="lb-stat-label">Exact score</span>'+m.exactScore+'/'+m.total+'</span>'+
-        '<span><span class="lb-stat-label">Conf when correct (1&ndash;10)</span>'+m.confWhenCorrect.toFixed(1)+'</span>'+
+        '<span><span class="lb-stat-label">Correct winner</span>'+pct+'%</span>'+
+        '<span><span class="lb-stat-label">Exact score (of '+m.total+' games)</span>'+m.exactScore+'/'+m.total+'</span>'+
+        '<span><span class="lb-stat-label">Confidence when correct (1&ndash;10)</span>'+m.confWhenCorrect.toFixed(1)+'</span>'+
       '</div>'+
     '</div>';
   }).join('');
