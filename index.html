@@ -14,7 +14,7 @@ h2.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,
 :root{
   --wc-navy:#0D1B3E;--wc-navy-mid:#1A2F5E;--wc-navy-light:#243770;
   --wc-gold:#C9A84C;--wc-gold-light:#E8C96A;--wc-gold-pale:#F5EDD6;
-  --wc-white:#FFFFFF;--wc-offwhite:#F7F8FA;--wc-muted:#6B7A99;
+  --wc-white:#FFFFFF;--wc-offwhite:#F7F8FA;--wc-muted:#5A6885;
   --wc-border:#D4D9E8;--wc-success:#1A7A3C;--wc-danger:#B91C1C;
 }
 body{margin:0;padding:12px;background:var(--wc-white);font-family:var(--font-sans)}
@@ -32,10 +32,14 @@ body{margin:0;padding:12px;background:var(--wc-white);font-family:var(--font-san
 .tab-row{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:1.25rem}
 .tab{font-size:12px;font-weight:500;color:var(--wc-muted);padding:7px 6px;cursor:pointer;background:var(--wc-offwhite);border:.5px solid var(--wc-border);border-radius:8px;text-align:center}
 .tab.active{background:var(--wc-navy);color:var(--wc-gold);border-color:var(--wc-navy)}
-.lb-head{display:grid;grid-template-columns:28px 1fr 110px 90px 110px;gap:8px;padding:0 4px 8px;border-bottom:1px solid var(--wc-border);margin-bottom:2px}
+.lb-head{display:grid;grid-template-columns:32px 160px 1fr 80px 140px;gap:12px;padding:0 8px 8px;border-bottom:1px solid var(--wc-border);margin-bottom:2px}
 .lb-head span{font-size:10px;font-weight:500;color:var(--wc-muted);text-transform:uppercase;letter-spacing:.04em}
-.lb-row{display:grid;grid-template-columns:28px 1fr 110px 90px 110px;align-items:center;gap:8px;padding:10px 4px;border-bottom:.5px solid var(--wc-border)}
-.lb-row:last-child{border-bottom:none}
+.lb-entry{border-bottom:.5px solid var(--wc-border)}
+.lb-entry:last-of-type{border-bottom:none}
+.lb-row{display:grid;grid-template-columns:32px 160px 1fr 80px 140px;align-items:center;gap:12px;padding:10px 8px}
+.lb-row-stats{display:none}
+.lb-cell-model{display:flex;align-items:center;gap:7px;min-width:0}
+.lb-cell-pct{display:flex;flex-direction:column;gap:4px;min-width:0}
 .rank-badge{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;font-size:11px;font-weight:500;background:var(--wc-offwhite);color:var(--wc-muted);border:.5px solid var(--wc-border)}
 .rank-badge.gold{background:var(--wc-gold);color:var(--wc-navy);border-color:var(--wc-gold)}
 .model-pill{display:flex;align-items:center;gap:7px}
@@ -88,14 +92,17 @@ body{margin:0;padding:12px;background:var(--wc-white);font-family:var(--font-san
 .finding-body{font-size:13px;color:#4a5568;line-height:1.7;margin:0}
 .finding-body strong{font-weight:500;color:#1a1a2e}
 .quote-block{background:var(--wc-white);border-left:2px solid var(--wc-gold);padding:8px 12px;margin:8px 0 0;font-size:12px;color:#4a5568;line-height:1.6;font-style:italic;border-radius:0 4px 4px 0}
-.slabel{font-size:10px;font-weight:500;letter-spacing:.07em;text-transform:uppercase;color:var(--wc-muted);margin:0 0 10px}
 @media(max-width:480px){
   body{padding:8px}
   .metric-row{grid-template-columns:repeat(2,1fr)}
-  .lb-head{grid-template-columns:24px 1fr 70px 60px;gap:4px}
-  .lb-head span:last-child{display:none}
-  .lb-row{grid-template-columns:24px 1fr 70px 60px;gap:4px}
-  .lb-row .conf-val{display:none}
+  .lb-head{display:none}
+  .lb-entry{padding:0}
+  .lb-row{display:block;padding:10px 4px 6px}
+  .lb-cell-rank,.lb-cell-pct,.lb-cell-exact,.lb-cell-conf{display:none}
+  .lb-cell-model{display:flex;margin-bottom:8px}
+  .lb-row-stats{display:flex;gap:16px;flex-wrap:wrap;padding:0 4px 10px 16px}
+  .lb-stat-label{font-size:10px;color:var(--wc-muted);display:block;margin-bottom:2px}
+  .lb-row-stats>span{font-size:12px;font-weight:500;color:#1a1a2e}
   .game-grid{grid-template-columns:1fr}
   .tab-row{grid-template-columns:repeat(2,1fr);gap:5px}
   .dash-header{border-radius:8px;padding:1rem}
@@ -165,7 +172,7 @@ body{margin:0;padding:12px;background:var(--wc-white);font-family:var(--font-san
 
 <div id="pane-lb" style="display:none">
   <div class="lb-head">
-    <span></span><span>Model</span><span>Correct winner</span><span style="text-align:right">Exact score</span><span style="text-align:right">Confidence when correct</span>
+    <span></span><span>Model</span><span>Correct winner</span><span style="text-align:right">Exact score<br><span style="text-transform:none;font-weight:400;color:var(--wc-muted)">(of 14 games)</span></span><span style="text-align:right">Confidence when correct<br><span style="text-transform:none;font-weight:400;color:var(--wc-muted)">(scale of 1&ndash;10)</span></span>
   </div>
   <div id="leaderboard"></div>
 </div>
@@ -221,10 +228,10 @@ const gameData=[
 const findingsData=[
   {n:'01',title:'Gemini leads \u2014 and it\'s not close',body:'<strong>13 of 14 winners correct (92.9%)</strong>. Most exact scores. Highest confidence when right. Every other model topped out at 78.6%.',quote:null},
   {n:'02',title:'The one game everyone got wrong',body:'Brazil vs Norway. Every model picked Brazil. Norway won 2\u20131. They all defaulted to reputation over current form.',quote:null},
-  {n:'03',title:'When all 5 agree, trust it \u2014 mostly',body:'When all 5 picked the same winner, they were right <strong>9 out of 10 times</strong>. The one miss was also the tournament\'s biggest upset.',quote:null},
+  {n:'03',title:'When all 5 agree, trust it \u2014 mostly',body:'When all 5 picked the same winner, they were right <strong>9 out of 10 times</strong>. The one miss was also the biggest upset among the games in this study.',quote:null},
   {n:'04',title:'The semifinals separated the pack',body:'Through the quarters, four models were within one game of each other. The semis broke it open \u2014 Grok missed both, dropping to last. The semifinals did more to separate the leaderboard than the previous eight games combined.',quote:null},
   {n:'05',title:'Scorelines: one moment of precision, a lot of caution',body:'Almost every prediction was a 1-goal game. Nobody called a blowout \u2014 but <strong>Belgium won 4\u20131, Morocco 3\u20130, Argentina 3\u20131</strong>. The one exception: three models nailed the exact 1\u20132 scoreline in the Argentina vs England semifinal.',quote:null},
-  {n:'06',title:'Confidence only meant something for Gemini',body:'Most models scored themselves the same whether they were right or wrong. Gemini\'s confidence was noticeably higher on correct picks \u2014 the only model where the number actually meant something.',quote:null},
+  {n:'06',title:'Confidence is hard to judge with so few misses',body:'Most models scored themselves about the same whether they were right or wrong. Gemini\'s confidence looked higher on its correct picks \u2014 but with only <strong>1 wrong pick</strong> to compare against, that\'s a single data point, not a pattern. A different result on just that one game could flip the finding entirely. The other models, with 3\u20134 misses each, actually offer more to go on \u2014 and even there, confidence mostly didn\'t track correctness.',quote:null},
   {n:'07',title:'Claude hedged everything \u2014 and still tied for second',body:'"Pure speculation." "This is hypothetical." Every prediction came with a disclaimer. Didn\'t matter \u2014 it tied for second anyway.',quote:'"Pure speculation, as this hypothetical fixture hasn\'t been played and depends on squads, form, and draw outcomes I can\'t know in advance." \u2014 Claude Sonnet 5'},
   {n:'08',title:'Five models, almost identical reasoning',body:'Different architectures, different training \u2014 same vocabulary. "Superior squad depth." "Tournament pedigree." "Tight knockout match." Every model, every game.',quote:'"Argentina\'s world-class attacking quality and recent World Cup pedigree should edge out Switzerland\'s disciplined but less creative side in a tight knockout match." \u2014 Grok 4\n"Argentina\'s superior squad depth and quality should overcome Egypt\'s disciplined defense in a knockout setting." \u2014 Claude Sonnet 5\n"Argentina\'s superior squad depth, tournament experience and midfield control should narrowly edge out a highly competitive Norway squad." \u2014 Gemini 3.5 Flash'},
 ];
@@ -241,14 +248,25 @@ function renderLeaderboard(){
     var isTop=i===0;
     var pct=Math.round(m.correct/m.total*100);
     var isTopConf=m.confWhenCorrect===maxConf;
-    return '<div class="lb-row">'+
-      '<div><span class="rank-badge '+(isTop?'gold':'')+'>'+(i+1)+'</span></div>'+
-      '<div class="model-pill"><span class="dot" style="background:'+MC[m.name]+'"></span>'+
-      '<div><div class="model-name">'+SH[m.name]+'</div><div class="model-sub">'+m.correct+'/'+m.total+' correct</div></div></div>'+
-      '<div class="bar-group"><span class="bar-pct '+(isTop?'lead':'')+'">'+pct+'%</span>'+
-      '<div class="bar-wrap"><div class="bar-fill" style="width:'+pct+'%;background:'+(isTop?'#0D1B3E':'#D4D9E8')+'"></div></div></div>'+
-      '<div style="text-align:right;font-size:13px;font-weight:500;color:#1a1a2e">'+m.exactScore+'<span style="color:var(--wc-muted);font-weight:400">/'+m.total+'</span></div>'+
-      '<div class="conf-val '+(isTopConf?'lead':'')+'">'+m.confWhenCorrect.toFixed(1)+'<span style="color:var(--wc-muted);font-weight:400">/10</span></div>'+
+    return '<div class="lb-entry">'+
+      '<div class="lb-row">'+
+        '<div class="lb-cell-rank"><span class="rank-badge '+(isTop?'gold':'')+'">'+(i+1)+'</span></div>'+
+        '<div class="lb-cell-model">'+
+          '<span class="dot" style="background:'+MC[m.name]+';flex-shrink:0"></span>'+
+          '<div><div class="model-name">'+SH[m.name]+'</div><div class="model-sub">'+m.correct+'/'+m.total+' correct</div></div>'+
+        '</div>'+
+        '<div class="lb-cell-pct">'+
+          '<span class="bar-pct '+(isTop?'lead':'')+'">'+pct+'%</span>'+
+          '<div class="bar-wrap"><div class="bar-fill" style="width:'+pct+'%;background:'+(isTop?'#0D1B3E':'#5A6885')+'"></div></div>'+
+        '</div>'+
+        '<div class="lb-cell-exact" style="text-align:right;font-size:13px;font-weight:500;color:#1a1a2e">'+m.exactScore+'<span style="color:var(--wc-muted);font-weight:400">/'+m.total+'</span></div>'+
+        '<div class="lb-cell-conf conf-val '+(isTopConf?'lead':'')+'">'+m.confWhenCorrect.toFixed(1)+'</div>'+
+      '</div>'+
+      '<div class="lb-row-stats">'+
+        '<span><span class="lb-stat-label">Correct</span>'+pct+'%</span>'+
+        '<span><span class="lb-stat-label">Exact score</span>'+m.exactScore+'/'+m.total+'</span>'+
+        '<span><span class="lb-stat-label">Conf when correct (1&ndash;10)</span>'+m.confWhenCorrect.toFixed(1)+'</span>'+
+      '</div>'+
     '</div>';
   }).join('');
   html+='<p class="note">Correct winner = did the model pick the team that actually won. Exact score = did the predicted scoreline match the actual result exactly. Confidence when correct = average self-reported confidence (1\u201310) on picks the model got right. The Final and Third Place match are pending.</p>';
