@@ -97,10 +97,11 @@ body{margin:0;padding:12px;background:var(--wc-white);font-family:var(--font-san
   .metric-row{grid-template-columns:repeat(2,1fr)}
   .lb-head{display:none}
   .lb-entry{padding:0}
-  .lb-row{display:block;padding:10px 4px 6px}
-  .lb-cell-rank,.lb-cell-pct,.lb-cell-exact,.lb-cell-conf{display:none}
+  .lb-row{display:flex;flex-wrap:wrap;align-items:center;padding:10px 4px 6px}
+  .lb-cell-pct,.lb-cell-exact,.lb-cell-conf{display:none}
+  .lb-cell-rank{margin-right:8px}
   .lb-cell-model{display:flex;margin-bottom:8px}
-  .lb-row-stats{display:flex;gap:16px;flex-wrap:wrap;padding:0 4px 10px 16px}
+  .lb-row-stats{display:flex;gap:16px;flex-wrap:wrap;padding:0 4px 10px 16px;flex-basis:100%}
   .lb-stat-label{font-size:10px;color:var(--wc-muted);display:block;margin-bottom:2px}
   .lb-row-stats>span{font-size:12px;font-weight:500;color:#1a1a2e}
   .game-grid{grid-template-columns:1fr}
