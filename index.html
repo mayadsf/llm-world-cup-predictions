@@ -161,7 +161,7 @@ body{margin:0;padding:12px;background:var(--wc-white);font-family:var(--font-san
     <p><strong>Fresh context every time:</strong> each prediction was made in a brand new conversation &mdash; new chat, new account, no history carried over. This keeps every run fully independent with no cross-contamination between predictions.</p>
     <p><strong>Timing:</strong> prompts were run after the matchup was confirmed (following the previous round) but before the game kicked off. No hindsight, no live data.</p>
     <p><strong>One prompt per game for the leaderboard:</strong> each model was prompted once per game for the leaderboard. That&rsquo;s what the leaderboard and per-game tabs are based on.</p>
-    <p><strong>Consistency study:</strong> the semifinals and Final were each run 5 times per model in separate fresh conversations, using the identical prompt. The goal was to see whether models give stable answers or flip &mdash; and whether their confidence tracks with it. That data is a separate reliability layer on top of the prediction study.</p>
+    <p><strong>Consistency study:</strong> the semifinals, third-place match, and Final were each run 5 times per model in separate fresh conversations, using the identical prompt. The goal was to see whether models give stable answers or flip &mdash; and whether their confidence tracks with it. That data is a separate reliability layer on top of the prediction study.</p>
     <p><strong>Scoring:</strong> correct winner (yes/no) and exact score (yes/no), checked against the actual result after each game.</p>
   </div>
   <hr class="divider">
@@ -173,7 +173,7 @@ body{margin:0;padding:12px;background:var(--wc-white);font-family:var(--font-san
 
 <div id="pane-lb" style="display:none">
   <div class="lb-head">
-    <span></span><span>Model</span><span>Correct winner</span><span style="text-align:right">Exact score<br><span style="text-transform:none;font-weight:400;color:var(--wc-muted)">(of 15 games)</span></span><span style="text-align:right">Confidence when correct<br><span style="text-transform:none;font-weight:400;color:var(--wc-muted)">(scale of 1&ndash;10)</span></span>
+    <span></span><span>Model</span><span>Correct winner</span><span style="text-align:right">Exact score<br><span style="text-transform:none;font-weight:400;color:var(--wc-muted)">(of 16 games)</span></span><span style="text-align:right">Confidence when correct<br><span style="text-transform:none;font-weight:400;color:var(--wc-muted)">(scale of 1&ndash;10)</span></span>
   </div>
   <div id="leaderboard"></div>
 </div>
